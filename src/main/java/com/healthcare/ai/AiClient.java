@@ -47,37 +47,45 @@ public class AiClient {
     }
 
     private String chatCompletion(String systemPrompt, String userInput) {
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            throw new IllegalStateException("HF_API_KEY is not set");
-        }
+    if (apiKey == null || apiKey.trim().isEmpty()) {
+        throw new IllegalStateException("HF_API_KEY is not set");
+    }
 
-        log.info("Calling HF inference model: {} at URL: {}", chatModel, chatUrl);
+    log.info("Calling HF chat model: {} at URL: {}", chatModel, chatUrl);
 
-        // 🔥 Correct body for inference API
-        Map<String, Object> body = new HashMap<>();
-        body.put("inputs", systemPrompt + "\nUser: " + userInput);
+    Map<String, Object> body = new HashMap<>();
+    body.put("model", chatModel);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+    List<Map<String, String>> messages = new ArrayList<>();
+    messages.add(Map.of("role", "system", "content", systemPrompt));
+    messages.add(Map.of("role", "user", "content", userInput));
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+    body.put("messages", messages);
 
-        try {
-            ResponseEntity<List> response = restTemplate.postForEntity(chatUrl, request, List.class);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setBearerAuth(apiKey);
 
-            if (response.getBody() != null && !response.getBody().isEmpty()) {
-                Map first = (Map) response.getBody().get(0);
-                Object text = first.get("generated_text");
-                if (text != null) {
-                    return text.toString();
-                }
+    HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+    try {
+        ResponseEntity<Map> response = restTemplate.postForEntity(chatUrl, request, Map.class);
+
+        Map responseBody = response.getBody();
+
+        if (responseBody != null && responseBody.containsKey("choices")) {
+            List choices = (List) responseBody.get("choices");
+            if (!choices.isEmpty()) {
+                Map first = (Map) choices.get(0);
+                Map message = (Map) first.get("message");
+                return message.get("content").toString();
             }
-
-            return "No response from AI model";
-
-        } catch (Exception e) {
-            throw new IllegalStateException("AI request failed: " + e.getMessage(), e);
         }
+
+        return "No response from AI model";
+
+    } catch (Exception e) {
+        throw new IllegalStateException("AI request failed: " + e.getMessage(), e);
+    }
     }
 }
