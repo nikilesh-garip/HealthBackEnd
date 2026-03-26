@@ -35,6 +35,7 @@ public class Prescription {
     private String imageContentType;
 
     @Lob
+    @Column(columnDefinition = "BYTEA")
     @JsonIgnore
     private byte[] imageData;
 
