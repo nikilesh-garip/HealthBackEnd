@@ -1,11 +1,20 @@
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.*;
+import org.springframework.web.filter.CorsFilter;
+
 @Configuration
 public class CorsConfig {
 
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        
-        config.addAllowedOrigin("https://health-front-r7l7efjkl-nikilesh-garips-projects.vercel.app");
+
+        config.setAllowCredentials(true);
+
+        // 🔥 VERY IMPORTANT
+        config.addAllowedOriginPattern("*"); // allow all origins (safe for now)
+
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
