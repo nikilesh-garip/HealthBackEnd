@@ -34,6 +34,6 @@ twilio:
 ai:
   hf:
     api-key: ${HF_API_KEY}
-    chat-model: meta-llama/Llama-3.1-8B-Instruct
-    chat-url: https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct
+    chat-model: google/gemma-2b-it
+    chat-url: https://router.huggingface.co/v1/chat/completions
     temperature: 0
